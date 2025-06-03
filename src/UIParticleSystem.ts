@@ -60,8 +60,8 @@ export class UIParticleSystem extends UIElement {
     texture: Texture,
     options: Partial<UISystemOptions> = {},
   ) {
-    const width = texture.image.naturalWidth;
-    const height = texture.image.naturalHeight;
+    const width = texture.image.width;
+    const height = texture.image.height;
 
     if (!width || !height) {
       throw new Error("Invalid texture dimensions");
@@ -101,7 +101,7 @@ export class UIParticleSystem extends UIElement {
     const mesh = new Mesh(instancedGeometry, material);
     mesh.frustumCulled = false;
 
-    super(layer, mesh, 0, 0, 1, 1);
+    super(layer, mesh, 0, 0, 100, 100);
     this.instancedGeometry = instancedGeometry;
     this.material = material;
 
