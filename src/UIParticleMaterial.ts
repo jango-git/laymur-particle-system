@@ -5,7 +5,7 @@ export class UIParticleMaterial extends ShaderMaterial {
   constructor(texture: Texture) {
     super({
       vertexShader: `
-        attribute vec2 instancePosition;
+        attribute vec2 instanceTransform;
         attribute vec4 instanceColor;
 
         varying vec2 vUv;
@@ -14,7 +14,10 @@ export class UIParticleMaterial extends ShaderMaterial {
         void main() {
           vUv = uv;
           vColor = instanceColor;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(instancePosition, 0.0, 1.0);
+
+          vec3 scaledPosition = position * instanceTransform.w;
+          vec3 translatedPosition = scaledPosition + vec3(instanceTransform.xy, 0.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(translatedPosition, 1.0);
         }
       `,
       fragmentShader: `

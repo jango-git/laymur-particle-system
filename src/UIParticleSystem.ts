@@ -85,20 +85,8 @@ export class UIParticleSystem extends UIElement {
     const capacity = options.capacity ?? 128;
 
     instancedGeometry.setAttribute(
-      "instancePosition",
-      new InstancedBufferAttribute(new Float32Array(capacity * 3), 3).setUsage(
-        DynamicDrawUsage,
-      ),
-    );
-    instancedGeometry.setAttribute(
-      "instanceRotation",
-      new InstancedBufferAttribute(new Float32Array(capacity), 1).setUsage(
-        DynamicDrawUsage,
-      ),
-    );
-    instancedGeometry.setAttribute(
-      "instanceScale",
-      new InstancedBufferAttribute(new Float32Array(capacity), 1).setUsage(
+      "instanceTransform",
+      new InstancedBufferAttribute(new Float32Array(capacity * 4), 4).setUsage(
         DynamicDrawUsage,
       ),
     );
@@ -191,14 +179,8 @@ export class UIParticleSystem extends UIElement {
   }
 
   private updateInstanceAttributes(): void {
-    const positionAttribute = this.instancedGeometry.attributes[
-      "instancePosition"
-    ] as InstancedBufferAttribute;
-    const rotationAttribute = this.instancedGeometry.attributes[
-      "instanceRotation"
-    ] as InstancedBufferAttribute;
-    const scaleAttribute = this.instancedGeometry.attributes[
-      "instanceScale"
+    const transformAttribute = this.instancedGeometry.attributes[
+      "instanceTransform"
     ] as InstancedBufferAttribute;
     const colorAttribute = this.instancedGeometry.attributes[
       "instanceColor"
@@ -206,9 +188,13 @@ export class UIParticleSystem extends UIElement {
 
     for (let i = 0; i < this.particles.length; i++) {
       const particle = this.particles[i];
-      positionAttribute.setXY(i, particle.position.x, particle.position.y);
-      rotationAttribute.setX(i, particle.rotation);
-      scaleAttribute.setX(i, particle.scale);
+      transformAttribute.setXYZW(
+        i,
+        particle.position.x,
+        particle.position.y,
+        particle.rotation,
+        particle.scale,
+      );
       colorAttribute.setXYZW(
         i,
         particle.color.r,
@@ -218,9 +204,7 @@ export class UIParticleSystem extends UIElement {
       );
     }
 
-    positionAttribute.needsUpdate = true;
-    rotationAttribute.needsUpdate = true;
-    scaleAttribute.needsUpdate = true;
+    transformAttribute.needsUpdate = true;
     colorAttribute.needsUpdate = true;
 
     this.instancedGeometry.instanceCount = this.particles.length;
