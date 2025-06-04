@@ -61,12 +61,10 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
     this.currentTime += deltaTime;
 
     if (this.infiniteInternal) {
-      // For infinite emitters, reset the time when it reaches the duration
       if (this.currentTime >= this.playbackDurationInternal) {
         this.resetSpawn();
       }
     } else {
-      // For non-infinite emitters, cap the time at the duration
       this.currentTime = Math.min(
         this.currentTime,
         this.playbackDurationInternal,
