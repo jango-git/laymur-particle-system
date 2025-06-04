@@ -1,5 +1,5 @@
 import type { UILayer } from "laymur";
-import { UIElement } from "laymur";
+import { UIAnchor } from "laymur";
 import type {
   BufferAttribute,
   Texture,
@@ -49,7 +49,7 @@ interface UISystemOptions {
   gravity: Vector2Like;
 }
 
-export class UIParticleSystem extends UIElement {
+export class UIParticleSystem extends UIAnchor {
   private readonly instancedGeometry: InstancedBufferGeometry;
   private readonly material: UIParticleMaterial;
   private readonly particles: UIParticle[] = [];
@@ -100,15 +100,13 @@ export class UIParticleSystem extends UIElement {
     const mesh = new Mesh(instancedGeometry, material);
     mesh.frustumCulled = false;
 
-    super(layer, mesh, 0, 0, 1, 1);
+    super(layer, 0, 0, mesh);
     this.instancedGeometry = instancedGeometry;
     this.material = material;
 
     if (options.gravity) {
       this.gravity.copy(options.gravity);
     }
-
-    this.applyTransformations();
   }
 
   public override destroy(): void {
@@ -142,7 +140,6 @@ export class UIParticleSystem extends UIElement {
   }
 
   protected override render(renderer: WebGLRenderer, deltaTime: number): void {
-    this.applyTransformations();
     const removedParticles: UIParticle[] = [];
 
     for (const particle of this.particles) {

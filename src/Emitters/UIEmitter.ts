@@ -1,14 +1,12 @@
 import type { UILayer } from "laymur";
-import { UIElement } from "laymur";
-import { Object3D } from "three";
+import { UIAnchor } from "laymur";
 import type { UIParticleSystem } from "../UIParticleSystem";
 
-export abstract class UIEmitter extends UIElement {
+export abstract class UIEmitter extends UIAnchor {
   constructor(
     layer: UILayer,
     protected readonly system: UIParticleSystem,
   ) {
-    super(layer, new Object3D(), 0, 0, 1, 1);
-    this.applyTransformations();
+    super(layer, 0, 0);
   }
 }
