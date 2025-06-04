@@ -108,6 +108,8 @@ export class UIParticleSystem extends UIElement {
     if (options.gravity) {
       this.gravity.copy(options.gravity);
     }
+
+    this.applyTransformations();
   }
 
   public override destroy(): void {

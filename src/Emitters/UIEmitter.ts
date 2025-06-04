@@ -9,5 +9,6 @@ export abstract class UIEmitter extends UIElement {
     protected readonly system: UIParticleSystem,
   ) {
     super(layer, new Object3D(), 0, 0, 1, 1);
+    this.applyTransformations();
   }
 }
