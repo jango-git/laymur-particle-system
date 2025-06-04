@@ -52,8 +52,6 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
   }
 
   protected override render(renderer: WebGLRenderer, deltaTime: number): void {
-    this.applyTransformations();
-
     if (!this.isPlayingInternal) {
       return;
     }
@@ -79,11 +77,14 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
     );
 
     const countToSpawn = expectedCount - this.lastTimeParticleAmount;
-    this.lastTimeParticleAmount = expectedCount;
+    const step = duration / Math.max(1, totalAmount - 1);
 
-    for (let i = 0; i < countToSpawn; i++) {
-      this.spawn();
+    for (let i = 1; i <= countToSpawn; i++) {
+      const targetTime = (this.lastTimeParticleAmount + i) * step;
+      this.spawn(this.currentTime - targetTime);
     }
+
+    this.lastTimeParticleAmount = expectedCount;
 
     if (!this.infiniteInternal && this.currentTime >= duration) {
       this.stop();
@@ -95,5 +96,5 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
     this.lastTimeParticleAmount = 0;
   }
 
-  protected abstract spawn(): void;
+  protected abstract spawn(elapsedTime: number): void;
 }

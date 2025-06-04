@@ -73,7 +73,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
     this.opacityOverTime = particleOptions.opacityOverTime ?? [1];
   }
 
-  protected spawn(): void {
+  protected override spawn(elapsedTime: number): void {
     const lifeTimeFactor =
       1 /
       (typeof this.lifeTime === "number"
@@ -155,15 +155,18 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
           : MathUtils.randFloat(value.min, value.max),
     );
 
-    this.system.spawnParticle({
-      lifeTimeFactor,
-      position,
-      rotation,
-      velocity,
-      angularVelocity,
-      scaleOverTime,
-      colorOverTime,
-      opacityOverTime,
-    });
+    this.system.spawnParticle(
+      {
+        lifeTimeFactor,
+        position,
+        rotation,
+        velocity,
+        angularVelocity,
+        scaleOverTime,
+        colorOverTime,
+        opacityOverTime,
+      },
+      elapsedTime,
+    );
   }
 }

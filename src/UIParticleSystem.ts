@@ -115,7 +115,7 @@ export class UIParticleSystem extends UIAnchor {
     super.destroy();
   }
 
-  public spawnParticle(options: UISystemSpawnOptions): void {
+  public spawnParticle(options: UISystemSpawnOptions, elapsedTime = 0): void {
     if (
       this.particles.length >=
       this.instancedGeometry.attributes["instanceTransform"].count
@@ -123,7 +123,7 @@ export class UIParticleSystem extends UIAnchor {
       return;
     }
 
-    this.particles.push({
+    const particle = {
       lifeTime: 0,
       lifeTimeFactor: options.lifeTimeFactor,
       position: new Vector2().copy(options.position),
@@ -136,39 +136,47 @@ export class UIParticleSystem extends UIAnchor {
       colorOverTime: [...options.colorOverTime],
       velocity: new Vector2().copy(options.velocity),
       angularVelocity: options.angularVelocity,
-    });
+    };
+
+    if (elapsedTime === 0 || this.updateParticle(particle, elapsedTime)) {
+      this.particles.push(particle);
+    }
   }
 
   protected override render(renderer: WebGLRenderer, deltaTime: number): void {
     const removedParticles: UIParticle[] = [];
 
     for (const particle of this.particles) {
-      particle.lifeTime += particle.lifeTimeFactor * deltaTime;
-
-      if (particle.lifeTime > 1) {
+      if (!this.updateParticle(particle, deltaTime)) {
         removedParticles.push(particle);
-        continue;
       }
-
-      particle.velocity.addScaledVector(this.gravity, deltaTime);
-      particle.position.addScaledVector(particle.velocity, deltaTime);
-      particle.rotation += particle.angularVelocity * deltaTime;
-      particle.scale = this.lerpArray(
-        particle.lifeTime,
-        particle.scaleOverTime,
-      );
-      particle.opacity = this.lerpArray(
-        particle.lifeTime,
-        particle.opacityOverTime,
-      );
-      particle.color = this.lerpColorArray(
-        particle.lifeTime,
-        particle.colorOverTime,
-      );
     }
 
     this.removeParticles(removedParticles);
     this.updateInstanceAttributes();
+  }
+
+  private updateParticle(particle: UIParticle, deltaTime: number): boolean {
+    particle.lifeTime += particle.lifeTimeFactor * deltaTime;
+
+    if (particle.lifeTime > 1) {
+      return false;
+    }
+
+    particle.velocity.addScaledVector(this.gravity, deltaTime);
+    particle.position.addScaledVector(particle.velocity, deltaTime);
+    particle.rotation += particle.angularVelocity * deltaTime;
+    particle.scale = this.lerpArray(particle.lifeTime, particle.scaleOverTime);
+    particle.opacity = this.lerpArray(
+      particle.lifeTime,
+      particle.opacityOverTime,
+    );
+    particle.color = this.lerpColorArray(
+      particle.lifeTime,
+      particle.colorOverTime,
+    );
+
+    return true;
   }
 
   private removeParticles(particles: UIParticle[]): void {
