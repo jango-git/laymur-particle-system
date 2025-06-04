@@ -19,7 +19,7 @@ import {
 import { UIParticleMaterial } from "./UIParticleMaterial";
 
 export interface UISystemSpawnOptions {
-  lifeTimeFactor: number;
+  lifeTime: number;
   position: Vector2Like;
   rotation: number;
   velocity: Vector2Like;
@@ -125,7 +125,7 @@ export class UIParticleSystem extends UIAnchor {
 
     const particle = {
       lifeTime: 0,
-      lifeTimeFactor: options.lifeTimeFactor,
+      lifeTimeFactor: 1 / options.lifeTime,
       position: new Vector2().copy(options.position),
       rotation: options.rotation,
       scale: options.scaleOverTime[0],

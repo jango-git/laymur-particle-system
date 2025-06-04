@@ -42,6 +42,8 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
   private readonly colorOverTime: (UIRangeColor | UIRange | number)[];
   private readonly opacityOverTime: (UIRange | number)[];
 
+  private emitterScaleInternal = 1;
+
   constructor(
     system: UIParticleSystem,
     emitterOptions: Partial<UIRectangleEmitterOptions> = {},
@@ -73,22 +75,31 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
     this.opacityOverTime = particleOptions.opacityOverTime ?? [1];
   }
 
+  public get emitterScale(): number {
+    return this.emitterScaleInternal;
+  }
+
+  public set emitterScale(value: number) {
+    this.emitterScaleInternal = value;
+  }
+
   protected override spawn(elapsedTime: number): void {
-    const lifeTimeFactor =
-      1 /
-      (typeof this.lifeTime === "number"
+    const lifeTime =
+      typeof this.lifeTime === "number"
         ? this.lifeTime
-        : MathUtils.randFloat(this.lifeTime.min, this.lifeTime.max));
+        : MathUtils.randFloat(this.lifeTime.min, this.lifeTime.max);
 
     const position = new Vector2(
       this.x +
         (typeof this.position === "number"
           ? this.position
-          : MathUtils.randFloat(this.position.min.x, this.position.max.x)),
+          : MathUtils.randFloat(this.position.min.x, this.position.max.x)) *
+          this.emitterScaleInternal,
       this.y +
         (typeof this.position === "number"
           ? this.position
-          : MathUtils.randFloat(this.position.min.y, this.position.max.y)),
+          : MathUtils.randFloat(this.position.min.y, this.position.max.y)) *
+          this.emitterScaleInternal,
     );
 
     const rotation = MathUtils.degToRad(
@@ -101,10 +112,9 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
       MathUtils.randFloat(this.velocity.angleMin, this.velocity.angleMax),
     );
 
-    const velocityPower = MathUtils.randFloat(
-      this.velocity.powerMin,
-      this.velocity.powerMax,
-    );
+    const velocityPower =
+      MathUtils.randFloat(this.velocity.powerMin, this.velocity.powerMax) *
+      this.emitterScaleInternal;
 
     const velocity = new Vector2(
       Math.cos(velocityAngle),
@@ -121,9 +131,10 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
     );
 
     const scaleFactor =
-      typeof this.scale === "number"
+      (typeof this.scale === "number"
         ? this.scale
-        : MathUtils.randFloat(this.scale.min, this.scale.max);
+        : MathUtils.randFloat(this.scale.min, this.scale.max)) *
+      this.emitterScaleInternal;
 
     const scaleOverTime = this.scaleOverTime.map((value: UIRange | number) =>
       typeof value === "number"
@@ -157,7 +168,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
 
     this.system.spawnParticle(
       {
-        lifeTimeFactor,
+        lifeTime,
         position,
         rotation,
         velocity,
