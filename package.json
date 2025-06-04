@@ -1,6 +1,6 @@
 {
   "name": "laymur-particle-system",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "",
   "scripts": {
     "clean": "rm -rf dist",
@@ -31,7 +31,7 @@
   },
   "peerDependencies": {
     "three": "^0.176.0",
-    "laymur": "^0.1.49"
+    "laymur": "^0.1.50"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.1",

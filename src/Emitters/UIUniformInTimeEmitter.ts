@@ -52,31 +52,42 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
   }
 
   protected override render(renderer: WebGLRenderer, deltaTime: number): void {
+    this.applyTransformations();
+
     if (!this.isPlayingInternal) {
       return;
     }
 
+    this.currentTime += deltaTime;
+
     if (this.infiniteInternal) {
-      this.resetSpawn();
+      // For infinite emitters, reset the time when it reaches the duration
+      if (this.currentTime >= this.playbackDurationInternal) {
+        this.resetSpawn();
+      }
+    } else {
+      // For non-infinite emitters, cap the time at the duration
+      this.currentTime = Math.min(
+        this.currentTime,
+        this.playbackDurationInternal,
+      );
     }
 
-    this.currentTime += deltaTime;
-    const currentParticleAmount = Math.min(
-      this.spawnAmountInternal,
-      this.spawnAmountInternal *
-        (this.currentTime / this.playbackDurationInternal),
+    const totalAmount = this.spawnAmountInternal;
+    const duration = this.playbackDurationInternal;
+
+    const expectedCount = Math.floor(
+      (this.currentTime / duration) * totalAmount,
     );
 
-    const particleCountToSpawn = Math.round(
-      currentParticleAmount - this.lastTimeParticleAmount,
-    );
-    this.lastTimeParticleAmount = currentParticleAmount;
+    const countToSpawn = expectedCount - this.lastTimeParticleAmount;
+    this.lastTimeParticleAmount = expectedCount;
 
-    for (let i = 0; i < particleCountToSpawn; i++) {
+    for (let i = 0; i < countToSpawn; i++) {
       this.spawn();
     }
 
-    if (this.lastTimeParticleAmount >= this.spawnAmountInternal) {
+    if (!this.infiniteInternal && this.currentTime >= duration) {
       this.stop();
     }
   }

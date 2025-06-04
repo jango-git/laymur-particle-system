@@ -53,7 +53,7 @@ export class UIParticleSystem extends UIElement {
   private readonly instancedGeometry: InstancedBufferGeometry;
   private readonly material: UIParticleMaterial;
   private readonly particles: UIParticle[] = [];
-  private readonly gravity = new Vector2();
+  private readonly gravity = new Vector2(0, -1024);
 
   constructor(
     layer: UILayer,
@@ -67,8 +67,7 @@ export class UIParticleSystem extends UIElement {
       throw new Error("Invalid texture dimensions");
     }
 
-    const aspect = width / height;
-    const plane = new PlaneGeometry(aspect, 1);
+    const plane = new PlaneGeometry(width, height);
     const instancedGeometry = new InstancedBufferGeometry();
     instancedGeometry.index = plane.index;
 
@@ -101,7 +100,7 @@ export class UIParticleSystem extends UIElement {
     const mesh = new Mesh(instancedGeometry, material);
     mesh.frustumCulled = false;
 
-    super(layer, mesh, 0, 0, 100, 100);
+    super(layer, mesh, 0, 0, 1, 1);
     this.instancedGeometry = instancedGeometry;
     this.material = material;
 
@@ -119,7 +118,10 @@ export class UIParticleSystem extends UIElement {
   }
 
   public spawnParticle(options: UISystemSpawnOptions): void {
-    if (this.particles.length >= this.instancedGeometry.instanceCount) {
+    if (
+      this.particles.length >=
+      this.instancedGeometry.attributes["instanceTransform"].count
+    ) {
       return;
     }
 
@@ -140,6 +142,7 @@ export class UIParticleSystem extends UIElement {
   }
 
   protected override render(renderer: WebGLRenderer, deltaTime: number): void {
+    this.applyTransformations();
     const removedParticles: UIParticle[] = [];
 
     for (const particle of this.particles) {
@@ -181,12 +184,9 @@ export class UIParticleSystem extends UIElement {
   }
 
   private updateInstanceAttributes(): void {
-    const transformAttribute = this.instancedGeometry.attributes[
-      "instanceTransform"
-    ] as InstancedBufferAttribute;
-    const colorAttribute = this.instancedGeometry.attributes[
-      "instanceColor"
-    ] as InstancedBufferAttribute;
+    const transformAttribute =
+      this.instancedGeometry.attributes["instanceTransform"];
+    const colorAttribute = this.instancedGeometry.attributes["instanceColor"];
 
     for (let i = 0; i < this.particles.length; i++) {
       const particle = this.particles[i];
@@ -204,10 +204,10 @@ export class UIParticleSystem extends UIElement {
         particle.color.b,
         particle.opacity,
       );
-    }
 
-    transformAttribute.needsUpdate = true;
-    colorAttribute.needsUpdate = true;
+      transformAttribute.needsUpdate = true;
+      colorAttribute.needsUpdate = true;
+    }
 
     this.instancedGeometry.instanceCount = this.particles.length;
   }

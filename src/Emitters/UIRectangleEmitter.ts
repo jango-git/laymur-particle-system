@@ -1,4 +1,3 @@
-import type { UILayer } from "laymur";
 import { Color, MathUtils, Vector2 } from "three";
 import type { UIParticleSystem } from "../UIParticleSystem";
 import {
@@ -32,63 +31,76 @@ export interface UIRectangleEmitterOptions {
 }
 
 export class UIRectangleEmitter extends UIUniformInTimeEmitter {
+  private readonly lifeTime: UIRange | number;
+  private readonly position: UIRangeVector | number;
+  private readonly angle: UIRange | number;
+  private readonly velocity: UIRangeRadial;
+  private readonly angularVelocity: UIRange | number;
+  private readonly scaleOverTime: (UIRange | number)[];
+  private readonly colorOverTime: (UIRangeColor | UIRange | number)[];
+  private readonly opacityOverTime: (UIRange | number)[];
+
   constructor(
-    layer: UILayer,
     system: UIParticleSystem,
-    emitterOptions: UIRectangleEmitterOptions,
-    private readonly particleOptions: UIRectangleEmitterParticleOptions,
+    emitterOptions: Partial<UIRectangleEmitterOptions> = {},
+    particleOptions: Partial<UIRectangleEmitterParticleOptions> = {},
   ) {
-    super(layer, system, emitterOptions);
+    super(system.layer, system, {
+      infinite: emitterOptions.infinite ?? false,
+      spawnAmount: emitterOptions.spawnAmount ?? 16,
+      playbackDuration: emitterOptions.playbackDuration ?? 1,
+      playsByDefault: emitterOptions.playsByDefault ?? false,
+    });
+
+    this.lifeTime = particleOptions.lifeTime ?? 20;
+    this.position = particleOptions.position ?? {
+      min: { x: 0, y: 0 },
+      max: { x: 0, y: 0 },
+    };
+    this.angle = particleOptions.angle ?? 0;
+    this.velocity = particleOptions.velocity ?? {
+      powerMin: 0,
+      powerMax: 0,
+      angleMin: 0,
+      angleMax: 0,
+    };
+    this.angularVelocity = particleOptions.angularVelocity ?? 0;
+    this.scaleOverTime = particleOptions.scaleOverTime ?? [1];
+    this.colorOverTime = particleOptions.colorOverTime ?? [0xffffff];
+    this.opacityOverTime = particleOptions.opacityOverTime ?? [1];
   }
 
   protected spawn(): void {
     const lifeTimeFactor =
       1 /
-      (typeof this.particleOptions.lifeTime === "number"
-        ? this.particleOptions.lifeTime
-        : MathUtils.randFloat(
-            this.particleOptions.lifeTime.min,
-            this.particleOptions.lifeTime.max,
-          ));
+      (typeof this.lifeTime === "number"
+        ? this.lifeTime
+        : MathUtils.randFloat(this.lifeTime.min, this.lifeTime.max));
 
     const position = new Vector2(
       this.x +
-        (typeof this.particleOptions.position === "number"
-          ? this.particleOptions.position
-          : MathUtils.randFloat(
-              this.particleOptions.position.min.x,
-              this.particleOptions.position.max.x,
-            )),
+        (typeof this.position === "number"
+          ? this.position
+          : MathUtils.randFloat(this.position.min.x, this.position.max.x)),
       this.y +
-        (typeof this.particleOptions.position === "number"
-          ? this.particleOptions.position
-          : MathUtils.randFloat(
-              this.particleOptions.position.min.y,
-              this.particleOptions.position.max.y,
-            )),
+        (typeof this.position === "number"
+          ? this.position
+          : MathUtils.randFloat(this.position.min.y, this.position.max.y)),
     );
 
     const rotation = MathUtils.degToRad(
-      typeof this.particleOptions.angle === "number"
-        ? this.particleOptions.angle
-        : MathUtils.randFloat(
-            this.particleOptions.angle.min,
-            this.particleOptions.angle.max,
-          ),
+      typeof this.angle === "number"
+        ? this.angle
+        : MathUtils.randFloat(this.angle.min, this.angle.max),
     );
 
     const velocityAngle = MathUtils.degToRad(
-      MathUtils.randFloat(
-        this.particleOptions.velocity.angleMin,
-        this.particleOptions.velocity.angleMax,
-      ),
+      MathUtils.randFloat(this.velocity.angleMin, this.velocity.angleMax),
     );
 
-    const velocityPower = MathUtils.degToRad(
-      MathUtils.randFloat(
-        this.particleOptions.velocity.angleMin,
-        this.particleOptions.velocity.angleMax,
-      ),
+    const velocityPower = MathUtils.randFloat(
+      this.velocity.powerMin,
+      this.velocity.powerMax,
     );
 
     const velocity = new Vector2(
@@ -97,25 +109,24 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
     ).multiplyScalar(velocityPower);
 
     const angularVelocity = MathUtils.degToRad(
-      typeof this.particleOptions.angularVelocity === "number"
-        ? this.particleOptions.angularVelocity
+      typeof this.angularVelocity === "number"
+        ? this.angularVelocity
         : MathUtils.randFloat(
-            this.particleOptions.angularVelocity.min,
-            this.particleOptions.angularVelocity.max,
+            this.angularVelocity.min,
+            this.angularVelocity.max,
           ),
     );
 
-    const scaleOverTime = this.particleOptions.scaleOverTime.map(
-      (value: UIRange | number) =>
-        typeof value === "number"
-          ? value
-          : MathUtils.randFloat(value.min, value.max),
+    const scaleOverTime = this.scaleOverTime.map((value: UIRange | number) =>
+      typeof value === "number"
+        ? value
+        : MathUtils.randFloat(value.min, value.max),
     );
 
-    const colorOverTime = this.particleOptions.colorOverTime.map(
+    const colorOverTime = this.colorOverTime.map(
       (value: UIRangeColor | UIRange | number) => {
         if (typeof value === "number") {
-          return new Color(value, value, value);
+          return new Color().setHex(value);
         } else if (isUIRangeColor(value)) {
           return new Color(
             MathUtils.randFloat(value.rMin, value.rMax),
@@ -129,7 +140,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
       },
     );
 
-    const opacityOverTime = this.particleOptions.opacityOverTime.map(
+    const opacityOverTime = this.opacityOverTime.map(
       (value: UIRange | number) =>
         typeof value === "number"
           ? value
