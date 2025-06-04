@@ -12,7 +12,8 @@ import { UIUniformInTimeEmitter } from "./UIUniformInTimeEmitter";
 export interface UIRectangleEmitterParticleOptions {
   lifeTime: UIRange | number;
 
-  position: UIRangeVector | number;
+  position: UIRangeVector;
+  scale: UIRange | number;
   angle: UIRange | number;
 
   velocity: UIRangeRadial;
@@ -33,6 +34,7 @@ export interface UIRectangleEmitterOptions {
 export class UIRectangleEmitter extends UIUniformInTimeEmitter {
   private readonly lifeTime: UIRange | number;
   private readonly position: UIRangeVector | number;
+  private readonly scale: UIRange | number;
   private readonly angle: UIRange | number;
   private readonly velocity: UIRangeRadial;
   private readonly angularVelocity: UIRange | number;
@@ -57,6 +59,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
       min: { x: 0, y: 0 },
       max: { x: 0, y: 0 },
     };
+    this.scale = particleOptions.scale ?? 1;
     this.angle = particleOptions.angle ?? 0;
     this.velocity = particleOptions.velocity ?? {
       powerMin: 0,
@@ -117,10 +120,15 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
           ),
     );
 
+    const scaleFactor =
+      typeof this.scale === "number"
+        ? this.scale
+        : MathUtils.randFloat(this.scale.min, this.scale.max);
+
     const scaleOverTime = this.scaleOverTime.map((value: UIRange | number) =>
       typeof value === "number"
-        ? value
-        : MathUtils.randFloat(value.min, value.max),
+        ? value * scaleFactor
+        : MathUtils.randFloat(value.min, value.max) * scaleFactor,
     );
 
     const colorOverTime = this.colorOverTime.map(
