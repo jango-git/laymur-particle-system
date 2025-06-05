@@ -26,39 +26,39 @@ export interface UISystemSpawnOptions {
    * Lifetime of the particle in seconds.
    */
   lifeTime: number;
-  
+
   /**
    * Initial position of the particle in local space.
    */
   position: Vector2Like;
-  
+
   /**
    * Initial rotation angle in radians.
    */
   rotation: number;
-  
+
   /**
    * Initial velocity vector in pixels per second.
    */
   velocity: Vector2Like;
-  
+
   /**
    * Angular velocity in radians per second.
    */
   angularVelocity: number;
-  
+
   /**
    * Array of scale values over the particle's lifetime.
    * Values are interpolated linearly between array indices.
    */
   scaleOverTime: number[];
-  
+
   /**
    * Array of colors over the particle's lifetime.
    * Colors are interpolated linearly between array indices.
    */
   colorOverTime: Color[];
-  
+
   /**
    * Array of opacity values (0-1) over the particle's lifetime.
    * Values are interpolated linearly between array indices.
@@ -107,7 +107,7 @@ interface UISystemOptions {
    * @default 128
    */
   capacity: number;
-  
+
   /**
    * Gravity force applied to all particles in pixels per second squared.
    * @default {x: 0, y: -1024}
@@ -117,20 +117,20 @@ interface UISystemOptions {
 
 /**
  * Main particle system class that manages and renders UI particles efficiently.
- * 
+ *
  * This system uses GPU instancing to render many particles with high performance.
  * It handles particle lifecycle, physics simulation, and animated properties.
  * Particles are rendered using a provided texture and can be spawned by emitters
  * or directly through the spawnParticle method.
- * 
+ *
  * Features:
  * - GPU instanced rendering for performance
  * - Per-particle animation curves for scale, color, and opacity
  * - Physics simulation with gravity and velocity
  * - Automatic particle cleanup when lifetime expires
- * 
+ *
  * @extends {UIAnchor}
- * 
+ *
  * @example
  * ```typescript
  * // Create a particle system with a texture
@@ -139,14 +139,14 @@ interface UISystemOptions {
  *   capacity: 500,
  *   gravity: { x: 0, y: -500 }
  * });
- * 
+ *
  * // Create an emitter for the system
  * const emitter = new UIRectangleEmitter(particleSystem, {
  *   infinite: true,
  *   spawnAmount: 100,
  *   playbackDuration: 2
  * });
- * 
+ *
  * emitter.play();
  * ```
  */
@@ -162,7 +162,7 @@ export class UIParticleSystem extends UIAnchor {
 
   /**
    * Creates a new UIParticleSystem instance.
-   * 
+   *
    * @param layer - The UI layer this system belongs to
    * @param texture - The texture to use for particle rendering. The texture dimensions
    *                  determine the size of each particle quad.
@@ -227,7 +227,7 @@ export class UIParticleSystem extends UIAnchor {
    * Destroys the particle system and releases all resources.
    * This method should be called when the particle system is no longer needed
    * to prevent memory leaks.
-   * 
+   *
    * @override
    */
   public override destroy(): void {
@@ -238,11 +238,11 @@ export class UIParticleSystem extends UIAnchor {
 
   /**
    * Spawns a new particle with the specified properties.
-   * 
+   *
    * This method creates a particle and adds it to the system if capacity allows.
    * If elapsedTime is provided, the particle will be pre-simulated by that amount,
    * useful for creating particles that appear to have already been animating.
-   * 
+   *
    * @param options - Configuration for the new particle
    * @param elapsedTime - Optional time in seconds to pre-simulate the particle.
    *                      Useful for spawn bursts that need temporal distribution.
@@ -278,13 +278,14 @@ export class UIParticleSystem extends UIAnchor {
   /**
    * Updates all particles and renders the system.
    * This method is called automatically by the rendering system.
-   * 
+   *
    * @param renderer - The WebGL renderer
    * @param deltaTime - Time elapsed since last frame in seconds
    * @protected
    * @override
    */
   protected override render(renderer: WebGLRenderer, deltaTime: number): void {
+    this.applyTransformations();
     const removedParticles: UIParticle[] = [];
 
     for (const particle of this.particles) {
@@ -299,7 +300,7 @@ export class UIParticleSystem extends UIAnchor {
 
   /**
    * Updates a single particle's physics and animated properties.
-   * 
+   *
    * @param particle - The particle to update
    * @param deltaTime - Time elapsed since last frame in seconds
    * @returns True if the particle is still alive, false if it should be removed
@@ -330,7 +331,7 @@ export class UIParticleSystem extends UIAnchor {
 
   /**
    * Removes dead particles from the active particle array.
-   * 
+   *
    * @param particles - Array of particles to remove
    * @private
    */
@@ -346,7 +347,7 @@ export class UIParticleSystem extends UIAnchor {
   /**
    * Updates GPU instance attributes with current particle data.
    * This syncs the particle array state to the GPU for rendering.
-   * 
+   *
    * @private
    */
   private updateInstanceAttributes(): void {
@@ -381,7 +382,7 @@ export class UIParticleSystem extends UIAnchor {
   /**
    * Linearly interpolates a value from an array based on a normalized factor.
    * Used for animating particle properties over their lifetime.
-   * 
+   *
    * @param factor - Normalized time factor (0-1)
    * @param array - Array of values to interpolate between
    * @returns The interpolated value
@@ -402,7 +403,7 @@ export class UIParticleSystem extends UIAnchor {
   /**
    * Linearly interpolates a color from an array based on a normalized factor.
    * Used for animating particle colors over their lifetime.
-   * 
+   *
    * @param factor - Normalized time factor (0-1)
    * @param array - Array of colors to interpolate between
    * @returns The interpolated color
