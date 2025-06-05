@@ -3,18 +3,18 @@ import { Color, ShaderMaterial } from "three";
 
 /**
  * Custom shader material for rendering UI particles with instanced rendering.
- * 
+ *
  * This material extends Three.js ShaderMaterial to provide efficient rendering
  * of many particles using GPU instancing. Each particle instance can have its
  * own transform (position, rotation, scale), color, and opacity.
- * 
+ *
  * The material uses custom vertex and fragment shaders to:
  * - Apply per-instance transformations in the vertex shader
  * - Blend texture, instance color, and material color in the fragment shader
  * - Support transparency for particle fading effects
- * 
+ *
  * @extends {ShaderMaterial}
- * 
+ *
  * @example
  * ```typescript
  * const texture = new THREE.TextureLoader().load('particle.png');
@@ -25,7 +25,7 @@ import { Color, ShaderMaterial } from "three";
 export class UIParticleMaterial extends ShaderMaterial {
   /**
    * Creates a new UIParticleMaterial instance.
-   * 
+   *
    * @param texture - The texture to use for particle rendering.
    *                  This texture will be applied to each particle instance.
    */
@@ -72,13 +72,15 @@ export class UIParticleMaterial extends ShaderMaterial {
         opacity: { value: 1.0 },
       },
       transparent: true,
+      depthWrite: false,
+      depthTest: false,
     });
   }
 
   /**
    * Gets the current material color as a hexadecimal number.
    * This color is multiplied with the particle texture and instance colors.
-   * 
+   *
    * @returns The color as a hex number (e.g., 0xffffff for white)
    */
   public getColor(): number {
@@ -88,7 +90,7 @@ export class UIParticleMaterial extends ShaderMaterial {
   /**
    * Gets the current material opacity value.
    * This opacity is multiplied with the texture alpha and instance opacity.
-   * 
+   *
    * @returns The opacity value between 0 (transparent) and 1 (opaque)
    */
   public getOpacity(): number {
@@ -97,7 +99,7 @@ export class UIParticleMaterial extends ShaderMaterial {
 
   /**
    * Gets the current blending mode used for particle rendering.
-   * 
+   *
    * @returns The Three.js blending mode constant
    */
   public getBlending(): Blending {
@@ -107,7 +109,7 @@ export class UIParticleMaterial extends ShaderMaterial {
   /**
    * Sets the material color.
    * This color is multiplied with the particle texture and instance colors.
-   * 
+   *
    * @param color - The color as a hex number (e.g., 0xff0000 for red)
    * @returns This material instance for method chaining
    */
@@ -121,7 +123,7 @@ export class UIParticleMaterial extends ShaderMaterial {
    * Sets the material opacity.
    * The value is clamped between 0 and 1. This opacity is multiplied
    * with the texture alpha and instance opacity values.
-   * 
+   *
    * @param opacity - The opacity value (0 = transparent, 1 = opaque)
    * @returns This material instance for method chaining
    */
@@ -134,10 +136,10 @@ export class UIParticleMaterial extends ShaderMaterial {
   /**
    * Sets the blending mode for particle rendering.
    * Common modes include NormalBlending, AdditiveBlending, and MultiplyBlending.
-   * 
+   *
    * @param blending - The Three.js blending mode to use
    * @returns This material instance for method chaining
-   * 
+   *
    * @example
    * ```typescript
    * import { AdditiveBlending } from 'three';

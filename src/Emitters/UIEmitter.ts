@@ -1,5 +1,6 @@
 import type { UILayer } from "laymur";
 import { UIAnchor } from "laymur";
+import type { WebGLRenderer } from "three";
 import type { UIParticleSystem } from "../UIParticleSystem";
 
 /**
@@ -34,7 +35,7 @@ export abstract class UIEmitter extends UIAnchor {
     super(layer, 0, 0);
   }
 
-  protected override render(): void {
+  protected override render(renderer: WebGLRenderer, deltaTime: number): void {
     this.applyTransformations();
   }
 }

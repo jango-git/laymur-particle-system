@@ -24,13 +24,13 @@ export interface UIRectangleEmitterParticleOptions {
    * Particles will spawn randomly within this rectangular area.
    */
   position: UIRangeVector;
-  
+
   /**
    * Initial scale of particles.
    * Can be a fixed value or a range for random variation.
    */
   scale: UIRange | number;
-  
+
   /**
    * Initial rotation angle in degrees.
    * Can be a fixed value or a range for random variation.
@@ -42,7 +42,7 @@ export interface UIRectangleEmitterParticleOptions {
    * Defines both direction (angle) and magnitude (power) ranges.
    */
   velocity: UIRangeRadial;
-  
+
   /**
    * Angular velocity in degrees per second.
    * Can be a fixed value or a range for random variation.
@@ -55,14 +55,14 @@ export interface UIRectangleEmitterParticleOptions {
    * Each value can be fixed or a range for per-particle variation.
    */
   scaleOverTime: (UIRange | number)[];
-  
+
   /**
    * Color animation curve over particle lifetime.
    * Array values represent colors at evenly distributed time points from birth to death.
    * Supports hex colors, grayscale ranges, or RGB component ranges.
    */
   colorOverTime: (UIRangeColor | UIRange | number)[];
-  
+
   /**
    * Opacity animation curve over particle lifetime.
    * Array values represent opacity (0-1) at evenly distributed time points from birth to death.
@@ -80,17 +80,17 @@ export interface UIRectangleEmitterOptions {
    * When true, the emitter will restart after completing each cycle.
    */
   infinite: boolean;
-  
+
   /**
    * Total number of particles to spawn per cycle.
    */
   spawnAmount: number;
-  
+
   /**
    * Duration in seconds for one complete spawn cycle.
    */
   playbackDuration: number;
-  
+
   /**
    * Whether the emitter should start playing automatically.
    */
@@ -99,13 +99,13 @@ export interface UIRectangleEmitterOptions {
 
 /**
  * Rectangle-shaped particle emitter that spawns particles within a rectangular area.
- * 
+ *
  * This emitter creates particles uniformly distributed over time within a defined
  * rectangular region. It supports extensive customization of particle properties
  * including position, scale, rotation, velocity, and animated properties over lifetime.
- * 
+ *
  * @extends {UIUniformInTimeEmitter}
- * 
+ *
  * @example
  * ```typescript
  * const emitter = new UIRectangleEmitter(
@@ -151,7 +151,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
 
   /**
    * Creates a new UIRectangleEmitter instance.
-   * 
+   *
    * @param system - The particle system that will manage spawned particles
    * @param emitterOptions - Configuration for emitter behavior (timing, looping, etc.)
    * @param particleOptions - Configuration for individual particle properties
@@ -190,7 +190,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
   /**
    * Gets the emitter scale multiplier.
    * This value scales all position and velocity-related properties.
-   * 
+   *
    * @returns The current emitter scale
    */
   public get emitterScale(): number {
@@ -201,7 +201,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
    * Sets the emitter scale multiplier.
    * This value scales all position and velocity-related properties,
    * allowing the entire particle effect to be scaled up or down.
-   * 
+   *
    * @param value - The new emitter scale
    */
   public set emitterScale(value: number) {
@@ -211,7 +211,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
   /**
    * Spawns a single particle with randomized properties based on configuration.
    * This method is called by the base class at appropriate intervals.
-   * 
+   *
    * @param elapsedTime - Time elapsed since this particle should have been spawned
    * @protected
    */

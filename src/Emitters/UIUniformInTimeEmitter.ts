@@ -12,17 +12,17 @@ export interface UIUniformInTimeEmitterOptions {
    * When true, the emitter will restart after completing each cycle.
    */
   infinite: boolean;
-  
+
   /**
    * Total number of particles to spawn per cycle.
    */
   spawnAmount: number;
-  
+
   /**
    * Duration in seconds for one complete spawn cycle.
    */
   playbackDuration: number;
-  
+
   /**
    * Whether the emitter should start playing automatically.
    */
@@ -31,14 +31,14 @@ export interface UIUniformInTimeEmitterOptions {
 
 /**
  * Abstract emitter that spawns particles uniformly distributed over time.
- * 
+ *
  * This emitter spreads particle spawning evenly throughout the playback duration,
  * ensuring consistent particle emission rates. It supports both infinite looping
  * and single-cycle playback.
- * 
+ *
  * @abstract
  * @extends {UIEmitter}
- * 
+ *
  * @example
  * ```typescript
  * class MyEmitter extends UIUniformInTimeEmitter {
@@ -46,7 +46,7 @@ export interface UIUniformInTimeEmitterOptions {
  *     // Spawn a particle with specific properties
  *   }
  * }
- * 
+ *
  * const emitter = new MyEmitter(layer, system, {
  *   infinite: true,
  *   spawnAmount: 50,
@@ -74,7 +74,7 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
 
   /**
    * Creates a new UIUniformInTimeEmitter instance.
-   * 
+   *
    * @param layer - The UI layer this emitter belongs to
    * @param system - The particle system that will manage spawned particles
    * @param options - Configuration options for the emitter
@@ -121,7 +121,7 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
   /**
    * Updates the emitter and spawns particles based on elapsed time.
    * This method is called automatically by the rendering system.
-   * 
+   *
    * @param renderer - The WebGL renderer
    * @param deltaTime - Time elapsed since last frame in seconds
    * @protected
@@ -169,7 +169,7 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
   /**
    * Resets the spawn cycle to its initial state.
    * This clears the current time and particle count.
-   * 
+   *
    * @protected
    */
   protected resetSpawn(): void {
@@ -180,7 +180,7 @@ export abstract class UIUniformInTimeEmitter extends UIEmitter {
   /**
    * Abstract method to spawn a single particle.
    * Must be implemented by concrete emitter classes.
-   * 
+   *
    * @param elapsedTime - Time elapsed since this particle should have been spawned
    * @protected
    * @abstract
