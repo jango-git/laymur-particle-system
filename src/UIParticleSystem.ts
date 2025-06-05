@@ -80,7 +80,7 @@ interface UIParticle {
   /** Current rotation angle in radians */
   rotation: number;
   /** Current scale value */
-  scale: number;
+  scale: Vector2;
   /** Scale animation curve */
   scaleOverTime: number[];
   /** Current opacity value */
@@ -204,6 +204,12 @@ export class UIParticleSystem extends UIAnchor {
       ),
     );
     instancedGeometry.setAttribute(
+      "instanceScale",
+      new InstancedBufferAttribute(new Float32Array(capacity * 2), 2).setUsage(
+        DynamicDrawUsage,
+      ),
+    );
+    instancedGeometry.setAttribute(
       "instanceColor",
       new InstancedBufferAttribute(new Float32Array(capacity * 4), 4).setUsage(
         DynamicDrawUsage,
@@ -258,9 +264,9 @@ export class UIParticleSystem extends UIAnchor {
     const particle = {
       lifeTime: 0,
       lifeTimeFactor: 1 / options.lifeTime,
-      position: new Vector2().copy(options.position),
+      position: new Vector2(options.position.x, options.position.y),
       rotation: options.rotation,
-      scale: options.scaleOverTime[0],
+      scale: new Vector2(options.scaleOverTime[0], options.scaleOverTime[0]),
       scaleOverTime: [...options.scaleOverTime],
       opacity: options.opacityOverTime[0],
       opacityOverTime: [...options.opacityOverTime],
@@ -316,7 +322,9 @@ export class UIParticleSystem extends UIAnchor {
     particle.velocity.addScaledVector(this.gravity, deltaTime);
     particle.position.addScaledVector(particle.velocity, deltaTime);
     particle.rotation += particle.angularVelocity * deltaTime;
-    particle.scale = this.lerpArray(particle.lifeTime, particle.scaleOverTime);
+    const scale = this.lerpArray(particle.lifeTime, particle.scaleOverTime);
+    particle.scale.x = scale;
+    particle.scale.y = scale;
     particle.opacity = this.lerpArray(
       particle.lifeTime,
       particle.opacityOverTime,
@@ -351,8 +359,14 @@ export class UIParticleSystem extends UIAnchor {
    * @private
    */
   private updateInstanceAttributes(): void {
+    if (this.particles.length === 0) {
+      this.instancedGeometry.instanceCount = 0;
+      return;
+    }
+
     const transformAttribute =
       this.instancedGeometry.attributes["instanceTransform"];
+    const scaleAttribute = this.instancedGeometry.attributes["instanceScale"];
     const colorAttribute = this.instancedGeometry.attributes["instanceColor"];
 
     for (let i = 0; i < this.particles.length; i++) {
@@ -361,9 +375,10 @@ export class UIParticleSystem extends UIAnchor {
         i,
         particle.position.x,
         particle.position.y,
+        this.zIndex,
         particle.rotation,
-        particle.scale,
       );
+      scaleAttribute.setXY(i, particle.scale.x, particle.scale.y);
       colorAttribute.setXYZW(
         i,
         particle.color.r,
@@ -371,10 +386,11 @@ export class UIParticleSystem extends UIAnchor {
         particle.color.b,
         particle.opacity,
       );
-
-      transformAttribute.needsUpdate = true;
-      colorAttribute.needsUpdate = true;
     }
+
+    transformAttribute.needsUpdate = true;
+    scaleAttribute.needsUpdate = true;
+    colorAttribute.needsUpdate = true;
 
     this.instancedGeometry.instanceCount = this.particles.length;
   }

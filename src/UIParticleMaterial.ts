@@ -31,8 +31,14 @@ export class UIParticleMaterial extends ShaderMaterial {
    */
   constructor(texture: Texture) {
     super({
+      uniforms: {
+        map: { value: texture },
+        color: { value: new Color(1, 1, 1) },
+        opacity: { value: 1.0 },
+      },
       vertexShader: `
         attribute vec4 instanceTransform;
+        attribute vec2 instanceScale;
         attribute vec4 instanceColor;
 
         varying vec2 vUv;
@@ -42,14 +48,14 @@ export class UIParticleMaterial extends ShaderMaterial {
           vUv = uv;
           vColor = instanceColor;
 
-          float c = cos(instanceTransform.z);
-          float s = sin(instanceTransform.z);
+          float c = cos(instanceTransform.w);
+          float s = sin(instanceTransform.w);
           mat2 rotationMatrix = mat2(c, -s, s, c);
 
-          vec2 rotatedPosition = rotationMatrix * position.xy;
-          vec3 scaledPosition = vec3(rotatedPosition, position.z) * instanceTransform.w;
-          vec3 translatedPosition = scaledPosition + vec3(instanceTransform.xy, 0.0);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(translatedPosition, 1.0);
+          vec2 scaledPosition = position.xy * instanceScale.xy;
+          vec2 rotatedPosition = rotationMatrix * scaledPosition;
+          vec2 translatedPosition = rotatedPosition + instanceTransform.xy;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(translatedPosition.xy, 0.0, 1.0);
         }
       `,
       fragmentShader: `
@@ -66,12 +72,9 @@ export class UIParticleMaterial extends ShaderMaterial {
           #include <colorspace_fragment>
         }
       `,
-      uniforms: {
-        map: { value: texture },
-        color: { value: new Color(1, 1, 1) },
-        opacity: { value: 1.0 },
-      },
       transparent: true,
+      lights: false,
+      fog: false,
       depthWrite: false,
       depthTest: false,
     });
