@@ -12,6 +12,7 @@ import {
   InstancedBufferAttribute,
   InstancedBufferGeometry,
   MathUtils,
+  Matrix3,
   Mesh,
   PlaneGeometry,
   Vector2,
@@ -64,6 +65,9 @@ export interface UISystemSpawnOptions {
    * Values are interpolated linearly between array indices.
    */
   opacityOverTime: number[];
+
+  /** UV transformation matrix */
+  uvTransform: Matrix3;
 }
 
 /**
@@ -80,9 +84,13 @@ interface UIParticle {
   /** Current rotation angle in radians */
   rotation: number;
   /** Current scale value */
-  scale: Vector2;
+  scaleX: number;
+  /** Current scale value */
+  scaleY: number;
   /** Scale animation curve */
-  scaleOverTime: number[];
+  scaleOverTimeX: number[];
+  /** Scale animation curve */
+  scaleOverTimeY: number[];
   /** Current opacity value */
   opacity: number;
   /** Opacity animation curve */
@@ -95,6 +103,8 @@ interface UIParticle {
   velocity: Vector2;
   /** Angular velocity in radians per second */
   angularVelocity: number;
+  /** UV transformation matrix */
+  uvTransform: Matrix3;
 }
 
 /**
@@ -215,6 +225,12 @@ export class UIParticleSystem extends UIAnchor {
         DynamicDrawUsage,
       ),
     );
+    instancedGeometry.setAttribute(
+      "instanceUVTransform",
+      new InstancedBufferAttribute(new Float32Array(capacity * 9), 9).setUsage(
+        DynamicDrawUsage,
+      ),
+    );
 
     const material = new UIParticleMaterial(texture);
     const mesh = new Mesh(instancedGeometry, material);
@@ -261,19 +277,33 @@ export class UIParticleSystem extends UIAnchor {
       return;
     }
 
+    const m = options.uvTransform.elements;
+    const scaleU = Math.hypot(m[0], m[1]);
+    const scaleV = Math.hypot(m[3], m[4]);
+
+    const scaleOverTimeX = [...options.scaleOverTime].map(
+      (scale) => scale * scaleU,
+    );
+    const scaleOverTimeY = [...options.scaleOverTime].map(
+      (scale) => scale * scaleV,
+    );
+
     const particle = {
       lifeTime: 0,
       lifeTimeFactor: 1 / options.lifeTime,
       position: new Vector2(options.position.x, options.position.y),
       rotation: options.rotation,
-      scale: new Vector2(options.scaleOverTime[0], options.scaleOverTime[0]),
-      scaleOverTime: [...options.scaleOverTime],
+      scaleX: scaleOverTimeX[0],
+      scaleY: scaleOverTimeY[0],
+      scaleOverTimeX,
+      scaleOverTimeY,
       opacity: options.opacityOverTime[0],
       opacityOverTime: [...options.opacityOverTime],
       color: options.colorOverTime[0],
       colorOverTime: [...options.colorOverTime],
       velocity: new Vector2().copy(options.velocity),
       angularVelocity: options.angularVelocity,
+      uvTransform: new Matrix3().copy(options.uvTransform),
     };
 
     if (elapsedTime === 0 || this.updateParticle(particle, elapsedTime)) {
@@ -322,9 +352,15 @@ export class UIParticleSystem extends UIAnchor {
     particle.velocity.addScaledVector(this.gravity, deltaTime);
     particle.position.addScaledVector(particle.velocity, deltaTime);
     particle.rotation += particle.angularVelocity * deltaTime;
-    const scale = this.lerpArray(particle.lifeTime, particle.scaleOverTime);
-    particle.scale.x = scale;
-    particle.scale.y = scale;
+    particle.scaleX = this.lerpArray(
+      particle.lifeTime,
+      particle.scaleOverTimeX,
+    );
+    particle.scaleY = this.lerpArray(
+      particle.lifeTime,
+      particle.scaleOverTimeY,
+    );
+
     particle.opacity = this.lerpArray(
       particle.lifeTime,
       particle.opacityOverTime,
@@ -368,6 +404,9 @@ export class UIParticleSystem extends UIAnchor {
       this.instancedGeometry.attributes["instanceTransform"];
     const scaleAttribute = this.instancedGeometry.attributes["instanceScale"];
     const colorAttribute = this.instancedGeometry.attributes["instanceColor"];
+    const uvTransformAttribute = this.instancedGeometry.attributes[
+      "instanceUVTransform"
+    ] as BufferAttribute;
 
     for (let i = 0; i < this.particles.length; i++) {
       const particle = this.particles[i];
@@ -378,7 +417,7 @@ export class UIParticleSystem extends UIAnchor {
         this.zIndex,
         particle.rotation,
       );
-      scaleAttribute.setXY(i, particle.scale.x, particle.scale.y);
+      scaleAttribute.setXY(i, particle.scaleX, particle.scaleY);
       colorAttribute.setXYZW(
         i,
         particle.color.r,
@@ -386,11 +425,13 @@ export class UIParticleSystem extends UIAnchor {
         particle.color.b,
         particle.opacity,
       );
+      uvTransformAttribute.set(particle.uvTransform.elements, i * 9);
     }
 
     transformAttribute.needsUpdate = true;
     scaleAttribute.needsUpdate = true;
     colorAttribute.needsUpdate = true;
+    uvTransformAttribute.needsUpdate = true;
 
     this.instancedGeometry.instanceCount = this.particles.length;
   }

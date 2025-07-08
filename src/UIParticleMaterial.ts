@@ -40,12 +40,13 @@ export class UIParticleMaterial extends ShaderMaterial {
         attribute vec4 instanceTransform;
         attribute vec2 instanceScale;
         attribute vec4 instanceColor;
+        attribute mat3 instanceUVTransform;
 
         varying vec2 vUv;
         varying vec4 vColor;
 
         void main() {
-          vUv = uv;
+          vUv = (instanceUVTransform * vec3(uv, 1.0)).xy;
           vColor = instanceColor;
 
           float c = cos(instanceTransform.w);

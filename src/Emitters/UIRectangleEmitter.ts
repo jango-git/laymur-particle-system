@@ -1,4 +1,4 @@
-import { Color, MathUtils, Vector2 } from "three";
+import { Color, MathUtils, Matrix3, Vector2 } from "three";
 import type { UIParticleSystem } from "../UIParticleSystem";
 import {
   isUIRangeColor,
@@ -69,6 +69,12 @@ export interface UIRectangleEmitterParticleOptions {
    * Each value can be fixed or a range for per-particle variation.
    */
   opacityOverTime: (UIRange | number)[];
+
+  /**
+   * UV transformation matrix for particle texture mapping.
+   * Defines how the texture is stretched and positioned on the particle.
+   */
+  uvTransform: Matrix3 | Matrix3[];
 }
 
 /**
@@ -145,6 +151,8 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
   private readonly colorOverTime: (UIRangeColor | UIRange | number)[];
   /** Opacity animation curve */
   private readonly opacityOverTime: (UIRange | number)[];
+  /** UV transformation matrix */
+  private readonly uvTransform: Matrix3[];
 
   /** Internal scale multiplier for the emitter */
   private emitterScaleInternal = 1;
@@ -185,6 +193,8 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
     this.scaleOverTime = particleOptions.scaleOverTime ?? [1];
     this.colorOverTime = particleOptions.colorOverTime ?? [0xffffff];
     this.opacityOverTime = particleOptions.opacityOverTime ?? [1];
+    const uvTransfrom = particleOptions.uvTransform ?? new Matrix3().identity();
+    this.uvTransform = Array.isArray(uvTransfrom) ? uvTransfrom : [uvTransfrom];
   }
 
   /**
@@ -298,6 +308,9 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
           : MathUtils.randFloat(value.min, value.max),
     );
 
+    const uvTransform =
+      this.uvTransform[MathUtils.randInt(0, this.uvTransform.length - 1)];
+
     this.system.spawnParticle(
       {
         lifeTime,
@@ -308,6 +321,7 @@ export class UIRectangleEmitter extends UIUniformInTimeEmitter {
         scaleOverTime,
         colorOverTime,
         opacityOverTime,
+        uvTransform,
       },
       elapsedTime,
     );

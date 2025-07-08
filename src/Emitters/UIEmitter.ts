@@ -37,5 +37,7 @@ export abstract class UIEmitter extends UIAnchor {
 
   protected override render(renderer: WebGLRenderer, deltaTime: number): void {
     this.applyTransformations();
+    void renderer;
+    void deltaTime;
   }
 }
