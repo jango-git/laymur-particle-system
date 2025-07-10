@@ -1,6 +1,6 @@
 {
   "name": "laymur-particle-system",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "",
   "scripts": {
     "clean": "rm -rf dist",
